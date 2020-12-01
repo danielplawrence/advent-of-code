@@ -3,7 +3,8 @@ use ::day_01;
 
 fn main () {
     let input = parse_input(include_str!("input.txt"));
-    let result = day_01::two_sum(&input, &2020);
+    let matches = day_01::two_sum(&input, &2020);
+    let result = matches.0 * matches.1;
     println!("{:?}", result);
 }
 
