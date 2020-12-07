@@ -8,6 +8,9 @@ edition = "2018"
 name = "day_03"
 path = "src/lib.rs"
 
+[dependencies]
+regex = "1"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
