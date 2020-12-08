@@ -8,8 +8,8 @@ fn main () {
         bags.add_bag(res.clone(), &res.name);
     });
     let res = bags.get_bags_containing("shiny gold bag");
-    println!("Matching bags: {:?}", res);
-    println!("{}", res.len())
-
+    println!("{}", res.len());
+    let res2 = bags.count_number_of_bags_in_tree("shiny gold bag", &0);
+    println!("{}", res2);
 }
 

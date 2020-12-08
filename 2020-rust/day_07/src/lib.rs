@@ -5,7 +5,7 @@ use regex::Regex;
 #[derive(Debug,Clone)]
 pub struct Bag {
     pub name: String,
-    pub contains: HashMap<String, i32>
+    pub contains: HashMap<String, usize>
 }
 
 #[derive(Debug,Clone)]
@@ -50,6 +50,23 @@ impl Bags {
         }
         return false;
     }
+
+    pub fn count_number_of_bags_in_tree(&self, target: &str, init_count: &usize) -> usize {
+        let t = self.get_bag(target);
+        let mut count = init_count.clone();
+        if t.contains.len() == 0 {
+            return count;
+        }
+        // for each member of 'contains'
+        // add the number of bags
+        // then add that number * count_number_of_bags_in_tree(that bag)
+        for bag in t.contains.keys() {
+            let c = t.contains.get(bag).unwrap();
+            count = count + c;
+            count = count + (c * self.count_number_of_bags_in_tree(bag, &0));
+        }
+        return count;
+    }
 }
 
 //Given a rule in plain text,
@@ -60,14 +77,14 @@ pub fn parse_rule(input: &str) -> Bag {
     let cleanup_pattern = Regex::new(r"(s$|s[,\.]|\.$)").unwrap();
     let name = cleanup_pattern.replace_all(target, "");
     let contains_strings = input.split("contain").nth(1).unwrap().split(", ");
-    let contains: HashMap<String, i32> = contains_strings.fold(HashMap::new(), |mut contains, mut value| {
+    let contains: HashMap<String, usize> = contains_strings.fold(HashMap::new(), |mut contains, mut value| {
         value = value.trim();
         if value == "no other bags." {
             return contains;
         }
         let count_pattern = Regex::new("[0-9]").unwrap();
         let bags_pattern = Regex::new(r"([a-z\s\.])+$").unwrap();
-        let count: i32 = count_pattern.captures(value).unwrap().get(0).unwrap().as_str().parse().unwrap();
+        let count: usize = count_pattern.captures(value).unwrap().get(0).unwrap().as_str().parse().unwrap();
         let bag = bags_pattern.captures(value).unwrap().get(0).unwrap().as_str().trim();
         contains.insert(String::from(cleanup_pattern.replace_all(bag, "")), count);
         return contains
