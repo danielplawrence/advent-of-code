@@ -1,0 +1,18 @@
+[package]
+name = "day_10"
+version = "0.1.0"
+authors = ["Daniel Lawrence <danlaw@amazon.com>"]
+edition = "2018"
+
+[lib]
+name = "day_10"
+path = "src/lib.rs"
+
+
+
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+regex = "1"
