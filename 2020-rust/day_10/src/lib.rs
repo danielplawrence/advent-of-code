@@ -8,7 +8,7 @@ pub fn get_differences(input: &[usize]) -> HashMap<usize, usize> {
     //Add the initial adapter
     arr.insert(0, 0);
     //Add the final adapter (max + 3)
-    let max = arr.iter().max().unwrap();
+    let max = input.iter().max().unwrap();
     arr.push(max + 3);
     let mut res: HashMap<usize, usize> = HashMap::new();
     let mut counter = 0;
@@ -38,7 +38,7 @@ pub fn count_valid_combinations(input: &[i64]) -> i64 {
     //Add the initial adapter
     arr.insert(0, 0);
     //Add the final adapter (max + 3)
-    let max = arr.iter().max().unwrap();
+    let max = input.clone().iter().max().unwrap();
     arr.push(max + 3);
     //Keep a map of the result for each item
     let mut paths: HashMap<i64, i64> = HashMap::new();

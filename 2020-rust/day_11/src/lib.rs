@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Seat {
     pub x: usize,
     pub y: usize,
@@ -88,6 +88,123 @@ impl WaitingRoom {
             sittable: false
         }]
     }
+    pub fn get_adjacent_occupied_count_2(&self, seat: &Seat) -> usize {
+        let mut count = 0;
+        &[1, 2, 3, 4, 5, 6, 7, 8].iter().for_each(|d|{
+            let candidate: Option<Seat> = self.get_first_seat_in_direction(seat, *d);
+            if candidate.is_some() {
+                //println!("First seat in direction: {}: {:#?}", d, candidate.unwrap());
+            }
+            if candidate.is_some() && candidate.unwrap().occupied {
+                count = count + 1;
+            }
+        });
+        return count;
+    }
+    pub fn get_first_seat_in_direction(&self, seat: &Seat, direction: usize) -> Option<Seat>{
+        //
+        //  1   2   3
+        //  8   x   4
+        //  7   6   5
+        //
+        if direction == 1 {
+            // Find first top left diag
+            let mut x = seat.x;
+            let mut y = seat.y;
+            while x > 0 && y > 0 {
+                x = x - 1;
+                y = y - 1;
+                let candidate = &self.state[y][x];
+                if candidate.sittable {
+                    return Some(*candidate);
+                };
+            };
+        };
+        if direction == 2 {
+            //Find first straight up
+            let mut y = seat.y;
+            while y > 0 {
+                y = y - 1;
+                let candidate = &self.state[y][seat.x];
+                if candidate.sittable {
+                    return Some(*candidate);
+                };
+            };
+        };
+        if direction == 3 {
+            //Find first top right diag
+            let mut x = seat.x;
+            let mut y = seat.y;
+            while x < &self.state[0].len() -1 && y > 0 {
+                x = x + 1;
+                y = y - 1;
+                let candidate = &self.state[y][x];
+                if candidate.sittable {
+                    return Some(*candidate);
+                };
+            };
+        };
+        if direction == 4 {
+            //Find first directly right
+            let mut x = seat.x;
+            while x < &self.state[0].len() -1 {
+                x = x + 1;
+                let candidate = &self.state[seat.y][x];
+                if candidate.sittable {
+                    return Some(*candidate);
+                };
+            };
+        };
+        if direction == 5 {
+            //Find first bottom right diag
+            let mut x = seat.x;
+            let mut y = seat.y;
+            while x < &self.state[0].len() - 1 && y <  &self.state.len() - 1 {
+                x = x + 1;
+                y = y + 1;
+                let candidate = &self.state[y][x];
+                if candidate.sittable {
+                    return Some(*candidate);
+                };
+            };
+        };
+        if direction == 6 {
+            //Find first straight down
+            let mut y = seat.y;
+            while y < self.state.len() - 1 {
+                y = y + 1;
+                let candidate = &self.state[y][seat.x];
+                if candidate.sittable {
+                    return Some(*candidate);
+                };
+            };
+        };
+        if direction == 7 {
+            // Find first bottom left diag
+            let mut x = seat.x;
+            let mut y = seat.y;
+            while x > 0 && y < self.state.len() - 1 {
+                x = x - 1;
+                y = y + 1;
+                let candidate = &self.state[y][x];
+                if candidate.sittable {
+                    return Some(*candidate);
+                };
+            };
+        };
+        if direction == 8 {
+            //Find first directly left
+            let mut x = seat.x;
+            while x > 0 {
+                x = x - 1;
+                let candidate = &self.state[seat.y][x];
+                if candidate.sittable {
+                    return Some(*candidate);
+                };
+            };
+        };
+        return None;
+    }
     pub fn get_adjacent_occupied_count(&self, target: &Seat) -> usize {
         let mut count = 0;
         //println!("Target: {:#?}", target);
@@ -169,11 +286,63 @@ impl WaitingRoom {
         self.occupied = occupied_staged;
         self.unoccupied = unoccupied_staged;
     }
+
+    pub fn update_2(&mut self) {
+        let mut occupied_staged: Vec<Seat> = Vec::new();
+        let mut unoccupied_staged: Vec<Seat> = Vec::new();
+        let mut state_copy = self.state.clone();
+        //For each empty seat, check if there are adjacent occupied seats
+        &self.unoccupied.iter().for_each(|s|{
+            //If not, it becomes occupied
+            if WaitingRoom::get_adjacent_occupied_count_2(&self, s) == 0 {
+                occupied_staged.push(s.clone());
+            }
+        });
+        //For each occupied seat, check if there are adjacent occupied seats
+        &self.occupied.iter().for_each(|s|{
+            //If not, it becomes occupied
+            if WaitingRoom::get_adjacent_occupied_count_2(&self, s) >= 5 {
+                unoccupied_staged.push(s.clone());
+            }
+        });
+        //Update grid
+        occupied_staged.iter().for_each(|s|{
+            state_copy[s.y][s.x].occupied = true;
+        });
+        //Update grid
+        unoccupied_staged.iter().for_each(|s|{
+            state_copy[s.y][s.x].occupied = false;
+        });
+        self.state = state_copy;
+        self.occupied = occupied_staged;
+        self.unoccupied = unoccupied_staged;
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn test_get_adjacent_occupied_count_2(){
+        let input = "
+        .......#.
+        ...#.....
+        .#.......
+        .........
+        ..#L....#
+        ....#....
+        .........
+        #........
+        ...#.....";
+        let room = WaitingRoom::new(&input);
+        let target_seat = Seat {
+            x: 3,
+            y: 4,
+            sittable: true,
+            occupied: false
+        };
+        assert_eq!(room.get_adjacent_occupied_count_2(&target_seat), 8);
+    }
     #[test]
     fn test_get_adjacent_occupied_true(){
         let input = "
@@ -263,7 +432,7 @@ mod tests {
         assert_eq!(room.get_adjacent_occupied_count(&target_seat), 0);
     }
 
-    #[test]
+    /*#[test]
     fn test_update(){
         let input = "
         L.LL.LL.LL
@@ -281,6 +450,35 @@ mod tests {
         loop {
             prev_state = room.get_state();
             room.update();
+            room.print_state();
+            if room.get_state() == prev_state {
+                println!("{:#?}", room);
+                println!("{}", room.count_occupied());
+                break
+            }
+            prev_state = room.get_state();
+        }
+
+    }*/
+
+    #[test]
+    fn test_update_2(){
+        let input = "
+        L.LL.LL.LL
+        LLLLLLL.LL
+        L.L.L..L..
+        LLLL.LL.LL
+        L.LL.LL.LL
+        L.LLLLL.LL
+        ..L.L.....
+        LLLLLLLLLL
+        L.LLLLLL.L
+        L.LLLLL.LL";
+        let mut room = WaitingRoom::new(&input);
+        let mut prev_state = String::new();
+        loop {
+            prev_state = room.get_state();
+            room.update_2();
             room.print_state();
             if room.get_state() == prev_state {
                 println!("{:#?}", room);
