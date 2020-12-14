@@ -1,3 +1,14 @@
+use std::f32::consts::PI;
+
+/// 2D rotation of a point
+pub fn rotation_2d(x: isize, y: isize, angle: isize) -> (isize, isize) {
+    let radians = angle as f32 * PI / 180_f32;
+
+    let nx = (x as f32 * radians.cos() - y as f32 * radians.sin()).round();
+    let ny = (y as f32 * radians.cos() + x as f32 * radians.sin()).round();
+
+    (nx as isize, ny as isize)
+}
 #[derive(Copy, Clone, Debug)]
 pub struct Ship {
     pub north: isize,
@@ -74,6 +85,44 @@ impl Ship {
         if direction == 'S' {
             self.north = self.north - distance;
         }
+    }
+    pub fn move_by_waypoint(&mut self, waypoint: &Waypoint, value: &isize) {
+        self.east += waypoint.x * value;
+        self.north += waypoint.y * value;
+    }
+}
+#[derive(Debug, Eq, PartialEq)]
+pub struct Waypoint {
+    x: isize,
+    y: isize,
+}
+
+impl Waypoint {
+    pub fn north(&mut self, step: &isize) {
+        self.y += step;
+    }
+
+    pub fn south(&mut self, step: &isize) {
+        self.y -= step;
+    }
+
+    pub fn east(&mut self, step: &isize) {
+        self.x += step;
+    }
+
+    pub fn west(&mut self, step: &isize) {
+        self.x -= step;
+    }
+
+    pub fn rotate(&mut self, angle: &isize) {
+        let (nx, ny) = rotation_2d(self.x, self.y, *angle);
+
+        self.x = nx;
+        self.y = ny;
+    }
+
+    pub fn new(x: isize, y: isize) -> Self {
+        Self { x, y }
     }
 }
 #[cfg(test)]
